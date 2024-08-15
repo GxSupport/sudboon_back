@@ -1,5 +1,8 @@
 <?php
 
+
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\ContractController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +17,23 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+
+Route::prefix('auth')->group(function (){
+    Route::post('login',[AuthController::class,'login']);
 });
+Route::prefix( 'callback')->group(function (){
+    Route::post('contract',[ContractController::class,'callbackContract']);
+});
+Route::middleware('auth:sanctum')->group(function (){
+    Route::prefix('auth')->group(function (){
+        Route::post('logout',[AuthController::class,'logout']);
+    });
+    Route::prefix('connection')->group(function (){
+        Route::prefix('check')->group(function (){
+            Route::get('list',[ContractController::class,'listCheck']);
+            Route::get('get/{id}',[ContractController::class,'getCheck'])->where('id','[0-9]+');
+        });
+    });
+});
+
+
