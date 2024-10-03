@@ -18,7 +18,7 @@ return [
     |
     */
 
-    'default_sender' => GuzzleSender::class,
+    'default_sender' => \Saloon\HttpSender\HttpSender::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -35,4 +35,5 @@ return [
     */
 
     'integrations_path' => base_path('App/Http/Integrations'),
+
 ];

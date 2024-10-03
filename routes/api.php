@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,11 @@ Route::prefix( 'callback')->group(function (){
 Route::middleware('auth:sanctum')->group(function (){
     Route::prefix('auth')->group(function (){
         Route::post('logout',[AuthController::class,'logout']);
+    });
+    Route::prefix('pay')->group(function (){
+        Route::get('pay/{invoice}/{payment_id}',[PaymentController::class,'postPayConfirm'])
+            ->where('invoice','[0-9]+')
+            ->where('payment_id','[0-9]+');
     });
     Route::prefix('connection')->group(function (){
         Route::prefix('check')->group(function (){

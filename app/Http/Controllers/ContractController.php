@@ -9,17 +9,19 @@ use App\Http\Integrations\Sud\Requests\ListCheck;
 use App\Http\Integrations\Sud\Sud;
 use App\Http\Requests\PayedRequest;
 use App\Jobs\ContractJob;
+use App\Jobs\PaymentJob;
 use App\Sevices\CheckService;
 use App\Sevices\Client\ClientContractService;
 use App\Sevices\Client\ClientService;
 use App\Sevices\PaymentService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use JetBrains\PhpStorm\NoReturn;
 
 class ContractController extends Controller
 {
-    public function callbackContract(Request $request)
+    public function callbackContract(Request $request): JsonResponse
     {
         $data = $request->all();
         ContractJob::dispatch($data);
@@ -60,36 +62,15 @@ class ContractController extends Controller
                 $item,
                 $contract
             );
-            $request = new CreatePaymentRequest(
-                config('services.sud.company_name'),
-                config('services.sud.inn'),
-                config('services.sud.address'),
-                $item['courtTypeId'],
-                $item['regionId'],
-                $item['courtRegionId'],
-                $item['payCategoryId'],
-                $item['purposeId'],
-                17000
-            );
-            $res = (new Payment())->send($request);
-            $response = json_decode($res->body(), true);
-            if ($response['requestStatus']['code']==200) {
-                $payment->update([
-                    'status' => 1,
-                    'payment_number' => $response['invoice'],
-                    'response' => $response,
-                    'response_code' => $response['requestStatus']['code']
-                ]);
-            }
+            PaymentJob::dispatch($item, $payment->id);
+
         }
 
     }
     public function getCheck($id)
     {
-
         $connection = new Sud();
         $request = new GetCheck($id);
-
         $response = $connection->send($request);
         $data=json_decode($response->body(), true);
         if ($data['requestStatus']['code']==200){

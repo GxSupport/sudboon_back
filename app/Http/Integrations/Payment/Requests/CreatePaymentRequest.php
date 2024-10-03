@@ -15,11 +15,10 @@ class CreatePaymentRequest extends Request implements HasBody
      * The HTTP method of the request
      */
 
-    public function __construct(protected string $company_name, protected int $tin,
-                                protected string $address, protected int $courtTypeId,
+    public function __construct(protected int $courtTypeId,
                                 protected int    $regionId, protected int $courtRegionId,
                                 protected int $payCategoryId, protected int $purposeId,
-                                protected int $amount)
+                                protected int $amount, protected array $client)
     {
     }
 
@@ -36,19 +35,20 @@ class CreatePaymentRequest extends Request implements HasBody
     public function defaultBody(): array
     {
         return [
-            'amount' => $this->amount,
+            'amount' => $this->amount *100,
             'courtId' => $this->courtTypeId,
             'courtType' => 'CITIZEN',
             'entityType' => 'JURIDICAL',
             'isInFavor' => true,
             'juridicalEntity' => [
-                'address' => $this->address,
-                'name' => $this->company_name,
-                'tin' => $this->tin
+                'address' => config('services.sud.address'),
+                'name' => config('services.sud.company_name'),
+                'tin' => config('services.sud.inn'),
             ],
             'overdue' => 0,
             'payCategoryId' => $this->payCategoryId,
             'purposeId' => $this->purposeId,
+            'description' => $this->client['lastName'] . ' ' . $this->client['name'] . ' ' . $this->client['patronymic'],
         ];
     }
 }
