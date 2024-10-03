@@ -38,6 +38,7 @@ class AuthController extends Controller
         #endregion
         #region check user
         $user = $request->user();
+
         #endregion
         #region create token
         $tokenResult = $user->createToken('Personal Access Token');
