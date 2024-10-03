@@ -34,6 +34,10 @@ Route::middleware('auth:sanctum')->group(function (){
             Route::get('get/{id}',[ContractController::class,'getCheck'])->where('id','[0-9]+');
         });
     });
+    Route::prefix('contract')->group(function (){
+        Route::get('list',[ContractController::class,'list']);
+        Route::post('payed',[ContractController::class,'payed']);
+    });
 });
 
 

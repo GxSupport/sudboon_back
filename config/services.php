@@ -33,6 +33,15 @@ return [
     'sud' => [
         'url' => env('SUD_URL'),
         'inn' => env('INN'),
+        'company_name' => env('COMPANY_NAME'),
+        'address' => env('ADDRESS'),
+    ],
+    'munis' => [
+        'api_id' => env('MUNIS_API_ID'),
+        'method' => env('MUNIS_METHOD'),
+    ],
+    'ipakyulibank' => [
+        'api_key' => env('IPAKYULIBANK_API_KEY'),
     ],
 
 ];

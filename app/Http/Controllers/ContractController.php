@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Integrations\Payment\Payment;
+use App\Http\Integrations\Payment\Requests\CreatePaymentRequest;
 use App\Http\Integrations\Sud\Requests\GetCheck;
 use App\Http\Integrations\Sud\Requests\ListCheck;
 use App\Http\Integrations\Sud\Sud;
+use App\Http\Requests\PayedRequest;
 use App\Jobs\ContractJob;
 use App\Sevices\CheckService;
 use App\Sevices\Client\ClientContractService;
 use App\Sevices\Client\ClientService;
+use App\Sevices\PaymentService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use JetBrains\PhpStorm\NoReturn;
@@ -36,18 +40,47 @@ class ContractController extends Controller
                     $item['client']['dateBrith']
                 );
             }
-            ClientContractService::createClientContract(
-                $check->id,
-                $item['amount'],
-                null,
-                $item['id'],
-                true,
+            $contract = ClientContractService::checkById($item['id'], $check->id);
+
+            if (!$contract){
+                $contract =  ClientContractService::createClientContract(
+                    $check->id,
+                    $item['amount'],
+                    null,
+                    $item['id'],
+                    true,
+                    $item['courtTypeId'],
+                    $item['regionId'],
+                    $item['courtRegionId'],
+                    $item['purposeId'],
+                    $item['payCategoryId'],
+                );
+            }
+            $payment = PaymentService::createPayment(
+                $item,
+                $contract
+            );
+            $request = new CreatePaymentRequest(
+                config('services.sud.company_name'),
+                config('services.sud.inn'),
+                config('services.sud.address'),
                 $item['courtTypeId'],
                 $item['regionId'],
                 $item['courtRegionId'],
-                $item['purposeId'],
                 $item['payCategoryId'],
+                $item['purposeId'],
+                17000
             );
+            $res = (new Payment())->send($request);
+            $response = json_decode($res->body(), true);
+            if ($response['requestStatus']['code']==200) {
+                $payment->update([
+                    'status' => 1,
+                    'payment_number' => $response['invoice'],
+                    'response' => $response,
+                    'response_code' => $response['requestStatus']['code']
+                ]);
+            }
         }
 
     }
@@ -91,6 +124,24 @@ class ContractController extends Controller
         return success($data['content']);
     }
         return error($data['requestStatus']['message']);
+
+    }
+    public function list(Request $request)
+    {
+        $page = $request->get('page', 0);
+        $per_page = $request->get('per_page', 10);
+        $search = $request->get('search', null);
+
+
+        return success(ClientContractService::list($page, $per_page,$search));
+
+    }
+    public function payed(PayedRequest $request): void
+    {
+
+        dd($request);
+
+//        return success();
 
     }
 
