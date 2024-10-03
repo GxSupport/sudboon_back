@@ -5,6 +5,7 @@ namespace App\Http\Integrations\Payment\Requests;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Repositories\Body\JsonBodyRepository;
 use Saloon\Traits\Body\HasJsonBody;
 
 class PayRequest extends Request implements HasBody
@@ -15,7 +16,7 @@ class PayRequest extends Request implements HasBody
      * The HTTP method of the request
      */
 
-    public function __construct(protected string $invoice)
+    public function __construct(public string $invoice, public string $stage)
     {
     }
 
@@ -29,14 +30,14 @@ class PayRequest extends Request implements HasBody
         return '/ccenter/AAEx92e/krbcxDqZGri1OGDW5QEXKfajrT8/installment.php';
     }
 
-    public function defaultBody(): array
+    protected function defaultBody(): array
     {
         return [
-            'apiId' => config('services.munis.api_id'),
+            'apiId' => 19,
             'content' => [
-                "method" => config('services.munis.method'),
+                "method" => 'munis.pay',
                 "params"=>[
-                    "stage"=>"search",
+                    "stage"=>$this->stage,
                     "invoice"=>$this->invoice,
                 ]
             ]

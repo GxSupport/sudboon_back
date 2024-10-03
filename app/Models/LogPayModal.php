@@ -5,18 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PaymentModel extends Model
+class LogPayModal extends Model
 {
-    protected $table = 'payments';
+    protected $table = 'log_pay';
     use HasFactory;
 
     protected $fillable = [
-        'contract_id',
-        'amount',
+        'invoice',
         'status',
-        'is_payed',
-        'payment_id',
-        'payment_number',
         'response',
         'response_code',
     ];
