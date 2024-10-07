@@ -24,11 +24,9 @@ class PaymentController extends Controller
     {
         $request = new CreatePaymentRequest(
             $item['courtTypeId'],
-            $item['regionId'],
-            $item['courtRegionId'],
-            $item['payCategoryId'],
-            $item['purposeId'],
-            $item['amount'],
+            $item['payCategoryId'] ?? 3,
+            $item['purposeId']?? 8,
+            18750,
             $item['client']
         );
         $res = (new Payment())->send($request);
