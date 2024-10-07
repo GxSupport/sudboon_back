@@ -16,7 +16,6 @@ class CreatePaymentRequest extends Request implements HasBody
      */
 
     public function __construct(protected int $courtTypeId,
-                                protected int    $regionId, protected int $courtRegionId,
                                 protected int $payCategoryId, protected int $purposeId,
                                 protected int $amount, protected array $client)
     {
