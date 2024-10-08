@@ -52,10 +52,6 @@ class ContractController extends Controller
                     $item['id'],
                     true,
                     $item['courtTypeId'],
-                    $item['regionId'],
-                    $item['courtRegionId'],
-                    $item['purposeId'],
-                    $item['payCategoryId'],
                 );
             }
             $payment = PaymentService::createPayment(

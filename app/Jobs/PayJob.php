@@ -16,7 +16,7 @@ class PayJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(protected string $invoice, protected int $payment_id)
+    public function __construct(protected array $data)
     {
         //
     }
@@ -26,7 +26,7 @@ class PayJob implements ShouldQueue
      */
     public function handle(): void
     {
-        (new PaymentController)->postPay($this->invoice, $this->payment_id);
+        (new PaymentController)->postPay($this->data);
 
     }
 }
