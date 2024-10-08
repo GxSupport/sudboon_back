@@ -16,4 +16,9 @@ class PaymentService
         ]);
     }
 
+    public static function getPaymentInvoice($invoice)
+    {
+        return PaymentModel::query()->where('payment_number',$invoice)->first();
+    }
+
 }

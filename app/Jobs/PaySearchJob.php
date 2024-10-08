@@ -9,14 +9,14 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class PayConfirmJob implements ShouldQueue
+class PaySearchJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(protected string $invoice)
+    public function __construct(protected int $invoice, protected string $stage)
     {
         //
     }
@@ -26,6 +26,6 @@ class PayConfirmJob implements ShouldQueue
      */
     public function handle(): void
     {
-        (new PaymentController)->postPayConfirm($this->invoice);
+        (new PaymentController)->paySearch($this->invoice, $this->stage);
     }
 }

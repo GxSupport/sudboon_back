@@ -14,10 +14,7 @@ class ClientContractService
         $contractId,
         $is_active,
         $courtTypeId,
-        $regionId,
-        $courtRegionId,
-        $purposeId,
-        $payCategoryId
+
     )
     {
         return ClientContracts::query()->create([
@@ -27,10 +24,8 @@ class ClientContractService
             'contract_id' => $contractId,
             'is_active' => $is_active,
             'courtTypeId' => $courtTypeId,
-            'regionId' => $regionId,
-            'courtRegionId' => $courtRegionId,
-            'purposeId' => $purposeId,
-            'payCategoryId' => $payCategoryId,
+
+
         ]);
 
     }
