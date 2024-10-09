@@ -75,7 +75,7 @@ class PaymentController extends Controller
             LogPayModal::query()->create([
                 'invoice' => $invoice,
                 'status'=> 'success',
-                'response' => $res->json(),
+                'response' => $res->body(),
                 'response_code' => $response['code']
             ]);
         }
