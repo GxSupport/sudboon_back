@@ -38,9 +38,9 @@ class ClientContractService
         return $query->paginate($perPage, ['*'], 'page', $page);
 
     }
-    public static function checkById($id, $client_id): array|object|null
+    public static function checkById($contract, $client_id): array|object|null
     {
-        return ClientContracts::query()->where('contract_id',$id)->where('client_id',$client_id)->first();
+        return ClientContracts::query()->where('contract_id',$contract)->where('client_id',$client_id)->first();
     }
 
 }

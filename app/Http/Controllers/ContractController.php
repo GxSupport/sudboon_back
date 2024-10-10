@@ -14,6 +14,7 @@ use App\Sevices\CheckService;
 use App\Sevices\Client\ClientContractService;
 use App\Sevices\Client\ClientService;
 use App\Sevices\PaymentService;
+use App\Sevices\UnicalService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,35 +32,40 @@ class ContractController extends Controller
     {
         foreach ($data as $item) {
 
-            $check = ClientService::checkByPassportOrPinfl($item['client']['passport'], $item['client']['pinfl']);
-            if (!$check){
-                $check = ClientService::createClient(
-                    $item['client']['name'],
-                    $item['client']['lastName'],
-                    $item['client']['patronymic'],
-                    $item['client']['passport'],
-                    $item['client']['pinfl'],
-                    $item['client']['dateBrith']
-                );
-            }
-            $contract = ClientContractService::checkById($item['id'], $check->id);
+            $check_unical = UnicalService::checkByUnical($item['id']);
 
-            if (!$contract){
-                $contract =  ClientContractService::createClientContract(
-                    $check->id,
-                    $item['amount'],
-                    null,
-                    $item['id'],
-                    true,
-                    $item['courtTypeId'],
-                );
-            }
-            $payment = PaymentService::createPayment(
-                $item,
-                $contract
-            );
-            PaymentJob::dispatch($item, $payment->id);
+            if (!$check_unical){
+                $check = ClientService::checkByPassportOrPinfl($item['client']['passport'], $item['client']['pinfl']);
+                if (!$check){
+                    $check = ClientService::createClient(
+                        $item['client']['name'],
+                        $item['client']['lastName'],
+                        $item['client']['patronymic'],
+                        $item['client']['passport'],
+                        $item['client']['pinfl'],
+                        $item['client']['dateBrith']
+                    );
+                }
+                $contract = ClientContractService::checkById($item['contract'], $check->id);
 
+                if (!$contract){
+                    $contract =  ClientContractService::createClientContract(
+                        $check->id,
+                        $item['amount'],
+                        null,
+                        $item['id'],
+                        true,
+                        $item['courtTypeId'],
+                    );
+                }
+                $payment = PaymentService::createPayment(
+                    $item,
+                    $contract
+                );
+
+                UnicalService::createUnical($item['id'],$item['contract']);
+                PaymentJob::dispatch($item, $payment->id);
+            }
         }
 
     }
