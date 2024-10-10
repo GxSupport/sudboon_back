@@ -12,6 +12,7 @@ use App\Jobs\PaySearchJob;
 use App\Models\LogPayModal;
 use App\Models\PaymentModel;
 use App\Sevices\PaymentService;
+use App\Sevices\UnicalService;
 use Illuminate\Http\Request;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
@@ -35,14 +36,20 @@ class PaymentController extends Controller
         $response = json_decode($res->body(), true);
         if ($response['requestStatus']['code']==200) {
             $payment = PaymentModel::query()->find($payment_id);
+            $unical = UnicalService::getByUnicalContract($item['contract']);
+
+            if ($unical){
+                $unical->update([
+                    'invoice' => $response['invoice'],
+                    'payment_status' => 'created'
+                ]);
+            }
             $payment->update([
                 'status' => "1",
                 'payment_number' => $response['invoice'],
                 'response' => $response,
                 'response_code' => $response['requestStatus']['code']
             ]);
-//        PayJob::dispatch($response['invoice'], $payment_id);
-
         }
     }
 
@@ -56,19 +63,26 @@ class PaymentController extends Controller
     public function postPay($data)
     {
         foreach ($data as $item) {
-            $payment = PaymentService::getPaymentInvoice($item['invoice']);
-            if ($payment){
-                PaySearchJob::dispatch($item['invoice'], 'search');
+            $check_unical = UnicalService::checkByUnical($item['id']);
+            if ($check_unical){
+                $payment = PaymentService::getPaymentInvoice($item['invoice']);
+                if ($payment){
+                    PaySearchJob::dispatch($item['invoice'], 'search');
+                }
             }
         }
     }
     public function postPayConfirm($invoice)
     {
+        $unical = UnicalService::getByUnicalInvoice($invoice);
         $request = new PayRequest($invoice, 'confirm');
         $res = (new Pay())->send($request);
         $response = json_decode($res->body(), true);
         if($response['content']['munis']['state']=='success'){
             $payment = PaymentService::getPaymentInvoice($invoice);
+            $unical?->update([
+                'pay_status' => 'paid'
+            ]);
             $payment->update([
                 'is_payed' => "1",
             ]);
@@ -78,7 +92,18 @@ class PaymentController extends Controller
                 'response' => $res->body(),
                 'response_code' => $response['code']
             ]);
+        }else{
+            LogPayModal::query()->create([
+                'invoice' => $invoice,
+                'status'=> 'failed',
+                'response' => $res->body(),
+                'response_code' => $response['code']
+            ]);
+            $unical?->update([
+                'pay_status'=> 'failed'
+            ]);
         }
+
     }
 
     public function paySearch($invoice, $stage)
@@ -87,6 +112,12 @@ class PaymentController extends Controller
         $res = (new Pay())->send($request);
         $response = json_decode($res->body(), true);
         if ($response['code']==0){
+            $unical = UnicalService::getByUnicalInvoice($invoice);
+            if ($unical){
+                $unical->update([
+                    'pay_status'=> 'waiting'
+                ]);
+            }
             PayConfirmJob::dispatch($invoice);
         }
     }
