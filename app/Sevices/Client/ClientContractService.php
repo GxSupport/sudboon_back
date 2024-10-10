@@ -43,4 +43,14 @@ class ClientContractService
         return ClientContracts::query()->where('contract_id',$contract)->where('client_id',$client_id)->first();
     }
 
+    public static function getByContractId($contract_id)
+    {
+        return ClientContracts::query()->where('contract_id',$contract_id)->first();
+
+    }
+    public static function getBytId($contract_id)
+    {
+        return ClientContracts::query()->find($contract_id);
+
+    }
 }

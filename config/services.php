@@ -43,5 +43,10 @@ return [
     'ipakyulibank' => [
         'api_key' => env('IPAKYULIBANK_API_KEY'),
     ],
+    'onec'=>[
+        'url'=>env('ONEC_URL'),
+        'user'=>env('ONEC_USERNAME'),
+        'password'=>env('ONEC_PASSWORD'),
+    ]
 
 ];

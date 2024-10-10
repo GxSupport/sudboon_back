@@ -4,13 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Http\Integrations\Payment\Pay;
 use App\Http\Integrations\Payment\Payment;
+use App\Http\Integrations\Payment\PaymentResponse;
 use App\Http\Integrations\Payment\Requests\CreatePaymentRequest;
+use App\Http\Integrations\Payment\Requests\GetPaymentRequest;
+use App\Http\Integrations\Payment\Requests\PaymentResponseRequest;
 use App\Http\Integrations\Payment\Requests\PayRequest;
 use App\Jobs\PayConfirmJob;
 use App\Jobs\PayJob;
+use App\Jobs\PaymentResponseJob;
 use App\Jobs\PaySearchJob;
 use App\Models\LogPayModal;
 use App\Models\PaymentModel;
+use App\Sevices\Client\ClientService;
 use App\Sevices\PaymentService;
 use App\Sevices\UnicalService;
 use Illuminate\Http\Request;
@@ -37,7 +42,6 @@ class PaymentController extends Controller
         if ($response['requestStatus']['code']==200) {
             $payment = PaymentModel::query()->find($payment_id);
             $unical = UnicalService::getByUnicalContract($item['contract']);
-
             if ($unical){
                 $unical->update([
                     'invoice' => $response['invoice'],
@@ -50,6 +54,11 @@ class PaymentController extends Controller
                 'response' => $response,
                 'response_code' => $response['requestStatus']['code']
             ]);
+
+            PaymentResponseJob::dispatch($response['invoice']);
+
+
+
         }
     }
 
@@ -120,5 +129,53 @@ class PaymentController extends Controller
             }
             PayConfirmJob::dispatch($invoice);
         }
+    }
+
+    public function onecResponsePayment($invoice)
+    {
+        $unical = UnicalService::getByUnicalInvoice($invoice);
+        $payment = PaymentService::getPaymentInvoice($invoice);
+        $client = ClientService::getClientByContractId($payment->contract_id);
+
+        $requestCheck  = new GetPaymentRequest($invoice);
+        $resCheck = (new Payment())->send($requestCheck);
+        $responseCheck = json_decode($resCheck->body(), true);
+        if ($responseCheck['requestStatus']['code']==200){
+            $status = $responseCheck['invoiceStatus'];
+            $issued = date('d.m.Y',$responseCheck['issued']/1000 );
+            $overdue = date('d.m.Y',$responseCheck['overdue']/1000 );
+            $pinfl = $client->pinfl;
+            $name = $client->name;
+            $last_name = $client->last_name;
+            $patronymic = $client->patronymic;
+            $contract = $unical->contract;
+            $id = $unical->identifier;
+            $request = new PaymentResponseRequest(
+                $invoice,
+                $status,
+                $issued,
+                $overdue,
+                $pinfl,
+                $name,
+                $last_name,
+                $patronymic,
+                $contract,
+                $id
+            );
+            $res = (new PaymentResponse)->send($request);
+            $response = json_decode($res->body(), true);
+
+
+
+        }
+
+
+
+
+
+
+
+
+
     }
 }
