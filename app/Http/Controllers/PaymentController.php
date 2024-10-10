@@ -177,5 +177,12 @@ class PaymentController extends Controller
 
 
 
+
+
+    }
+    public function getPayment()
+    {
+        return "hello";
+
     }
 }

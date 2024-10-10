@@ -25,6 +25,7 @@ Route::prefix('auth')->group(function (){
 Route::prefix( 'callback')->group(function (){
     Route::post('contract',[ContractController::class,'callbackContract']);
     Route::post('payment',[PaymentController::class,'callbackPayment']);
+    Route::get('payment', [PaymentController::class, 'getPayment']);
 });
 Route::middleware('auth:sanctum')->group(function (){
     Route::prefix('auth')->group(function (){
