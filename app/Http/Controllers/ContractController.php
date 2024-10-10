@@ -31,9 +31,7 @@ class ContractController extends Controller
     public function addContractListFromJob($data):void
     {
         foreach ($data as $item) {
-
             $check_unical = UnicalService::checkByUnical($item['id']);
-
             if (!$check_unical){
                 $check = ClientService::checkByPassportOrPinfl($item['client']['passport'], $item['client']['pinfl']);
                 if (!$check){
