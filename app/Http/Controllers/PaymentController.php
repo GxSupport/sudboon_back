@@ -21,6 +21,7 @@ use App\Models\PaymentModel;
 use App\Sevices\Client\ClientService;
 use App\Sevices\PaymentService;
 use App\Sevices\UnicalService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
@@ -65,10 +66,11 @@ class PaymentController extends Controller
         }
     }
 
-    public function callbackPayment(Request $request): void
+    public function callbackPayment(Request $request): JsonResponse
     {
         $data = $request->all();
         PayJob::dispatch($data);
+        return response()->json(['message' => 'success']);
     }
 
 
