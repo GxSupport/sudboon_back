@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use App\Http\Integrations\Payment\Pay;
 use App\Http\Integrations\Payment\Payment;
 use App\Http\Integrations\Payment\PaymentResponse;
+use App\Http\Integrations\Payment\PayResponse;
 use App\Http\Integrations\Payment\Requests\CreatePaymentRequest;
 use App\Http\Integrations\Payment\Requests\GetPaymentRequest;
 use App\Http\Integrations\Payment\Requests\PaymentResponseRequest;
 use App\Http\Integrations\Payment\Requests\PayRequest;
+use App\Http\Integrations\Payment\Requests\PayResponseRequest;
 use App\Jobs\PayConfirmJob;
 use App\Jobs\PayJob;
 use App\Jobs\PaymentResponseJob;
+use App\Jobs\PayResponseJob;
 use App\Jobs\PaySearchJob;
 use App\Models\LogPayModal;
 use App\Models\PaymentModel;
@@ -101,6 +104,8 @@ class PaymentController extends Controller
                 'response' => $res->body(),
                 'response_code' => $response['code']
             ]);
+
+            PayResponseJob::dispatch($invoice);
         }else{
             LogPayModal::query()->create([
                 'invoice' => $invoice,
@@ -164,25 +169,35 @@ class PaymentController extends Controller
             );
             $res = (new PaymentResponse)->send($request);
             $response = json_decode($res->body(), true);
-
-
-
         }
+    }
+    public function oneCResponsePay($invoice)
+    {
+        $unical = UnicalService::getByUnicalInvoice($invoice);
+        $payment = PaymentService::getPaymentInvoice($invoice);
+        $client = ClientService::getClientByContractId($payment->contract_id);
 
-
-
-
-
-
-
-
-
+        $issued = now()->format('d.m.Y');
+        $pinfl = $client->pinfl;
+        $contract = $unical->contract;
+        $id = $unical->identifier;
+        $status = 'paid';
+        $request = new PayResponseRequest(
+            $invoice,
+            $status,
+            $issued,
+            $pinfl,
+            $contract,
+            $id
+        );
+        $res = (new PayResponse())->send($request);
+        $response = json_decode($res->body(), true);
 
 
     }
     public function getPayment()
     {
-        return "hello";
+        return now()->format('d.m.Y');
 
     }
 }
