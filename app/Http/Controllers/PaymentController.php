@@ -128,7 +128,8 @@ class PaymentController extends Controller
         $res = (new Pay())->send($request);
         $response = json_decode($res->body(), true);
         if ($response['code']==0){
-            if ($response['content']['detail']=="Ошибка! Сумма квитанции по указанному номеру уплачена"){
+
+            if (isset($response['content']['detail'])){
                 $payment = PaymentService::getPaymentInvoice($invoice);
                 $unical = UnicalService::getByUnicalInvoice($invoice);
                 $payment->update([
