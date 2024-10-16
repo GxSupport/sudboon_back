@@ -10,6 +10,7 @@ use App\Http\Integrations\Sud\Sud;
 use App\Http\Requests\PayedRequest;
 use App\Jobs\ContractJob;
 use App\Jobs\PaymentJob;
+use App\Jobs\PaymentResponseJob;
 use App\Sevices\CheckService;
 use App\Sevices\Client\ClientContractService;
 use App\Sevices\Client\ClientService;
@@ -63,6 +64,9 @@ class ContractController extends Controller
 
                 UnicalService::createUnical($item['id'],$item['contract']);
                 PaymentJob::dispatch($item, $payment->id);
+            }
+            if ($check_unical->invoice!=null){
+                PaymentResponseJob::dispatch($check_unical->invoice);
             }
         }
 

@@ -128,13 +128,25 @@ class PaymentController extends Controller
         $res = (new Pay())->send($request);
         $response = json_decode($res->body(), true);
         if ($response['code']==0){
-            $unical = UnicalService::getByUnicalInvoice($invoice);
-            if ($unical){
-                $unical->update([
-                    'pay_status'=> 'waiting'
+            if ($response['content']['detail']=="Ошибка! Сумма квитанции по указанному номеру уплачена"){
+                $payment = PaymentService::getPaymentInvoice($invoice);
+                $unical = UnicalService::getByUnicalInvoice($invoice);
+                $payment->update([
+                    'is_payed' => "1",
                 ]);
+                $unical?->update([
+                    'pay_status' => 'paid'
+                ]);
+                PayResponseJob::dispatch($invoice);
+            }else{
+                $unical = UnicalService::getByUnicalInvoice($invoice);
+                if ($unical){
+                    $unical->update([
+                        'pay_status'=> 'waiting'
+                    ]);
+                }
+                PayConfirmJob::dispatch($invoice);
             }
-            PayConfirmJob::dispatch($invoice);
         }
     }
 
