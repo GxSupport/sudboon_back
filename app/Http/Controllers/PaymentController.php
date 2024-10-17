@@ -58,11 +58,7 @@ class PaymentController extends Controller
                 'response' => $response,
                 'response_code' => $response['requestStatus']['code']
             ]);
-
             PaymentResponseJob::dispatch($response['invoice']);
-
-
-
         }
     }
 
