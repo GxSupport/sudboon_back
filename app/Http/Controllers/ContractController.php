@@ -64,10 +64,15 @@ class ContractController extends Controller
 
                 UnicalService::createUnical($item['id'],$item['contract']);
                 PaymentJob::dispatch($item, $payment->id);
+            }else{
+                if ($check_unical->invoice){
+                    PaymentResponseJob::dispatch($check_unical->invoice);
+                }else{
+                    PaymentJob::dispatch($item, $check_unical->payment_id);
+                }
             }
-            if ($check_unical->invoice!=null){
-                PaymentResponseJob::dispatch($check_unical->invoice);
-            }
+
+
         }
 
     }
