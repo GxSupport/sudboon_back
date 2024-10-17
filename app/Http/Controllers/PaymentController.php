@@ -92,22 +92,23 @@ class PaymentController extends Controller
         $request = new PayRequest($invoice, 'confirm');
         $res = (new Pay())->send($request);
         $response = json_decode($res->body(), true);
-        if($response['content']['munis']['state']=='success'){
-            $payment = PaymentService::getPaymentInvoice($invoice);
-            $unical?->update([
-                'pay_status' => 'paid'
-            ]);
-            $payment->update([
-                'is_payed' => "1",
-            ]);
-            LogPayModal::query()->create([
-                'invoice' => $invoice,
-                'status'=> 'success',
-                'response' => $res->body(),
-                'response_code' => $response['code']
-            ]);
-
-            PayResponseJob::dispatch($invoice);
+        if(isset($response['content']['munis']['state'])){
+            if ($response['content']['munis']['state']=='success'){
+                $payment = PaymentService::getPaymentInvoice($invoice);
+                $unical?->update([
+                    'pay_status' => 'paid'
+                ]);
+                $payment->update([
+                    'is_payed' => "1",
+                ]);
+                LogPayModal::query()->create([
+                    'invoice' => $invoice,
+                    'status'=> 'success',
+                    'response' => $res->body(),
+                    'response_code' => $response['code']
+                ]);
+                PayResponseJob::dispatch($invoice, 'paid');
+            }
         }else{
             LogPayModal::query()->create([
                 'invoice' => $invoice,
@@ -118,6 +119,7 @@ class PaymentController extends Controller
             $unical?->update([
                 'pay_status'=> 'failed'
             ]);
+            PayResponseJob::dispatch($invoice, 'failed');
         }
 
     }
@@ -128,26 +130,17 @@ class PaymentController extends Controller
         $res = (new Pay())->send($request);
         $response = json_decode($res->body(), true);
         if ($response['code']==0){
-
-            if (isset($response['content']['detail'])){
-                $payment = PaymentService::getPaymentInvoice($invoice);
-                $unical = UnicalService::getByUnicalInvoice($invoice);
-                $payment->update([
-                    'is_payed' => "1",
-                ]);
-                $unical?->update([
-                    'pay_status' => 'paid'
-                ]);
-                PayResponseJob::dispatch($invoice);
-            }else{
-                $unical = UnicalService::getByUnicalInvoice($invoice);
-                if ($unical){
-                    $unical->update([
-                        'pay_status'=> 'waiting'
-                    ]);
-                }
-                PayConfirmJob::dispatch($invoice);
-            }
+            $unical = UnicalService::getByUnicalInvoice($invoice);
+            $unical?->update([
+                'pay_status' => 'waiting'
+            ]);
+            PayConfirmJob::dispatch($invoice);
+        }else{
+            $unical = UnicalService::getByUnicalInvoice($invoice);
+            $unical?->update([
+                'pay_status' => 'failed'
+            ]);
+            PayResponseJob::dispatch($invoice, 'failed');
         }
     }
 
@@ -186,7 +179,7 @@ class PaymentController extends Controller
             $response = json_decode($res->body(), true);
         }
     }
-    public function oneCResponsePay($invoice)
+    public function oneCResponsePay($invoice, $status)
     {
         $unical = UnicalService::getByUnicalInvoice($invoice);
         $payment = PaymentService::getPaymentInvoice($invoice);
@@ -196,7 +189,6 @@ class PaymentController extends Controller
         $pinfl = $client->pinfl;
         $contract = $unical->contract;
         $id = $unical->identifier;
-        $status = 'paid';
         $request = new PayResponseRequest(
             $invoice,
             $status,

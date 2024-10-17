@@ -16,7 +16,7 @@ class PayResponseJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(protected int $invoice)
+    public function __construct(protected int $invoice, protected string $stage)
     {
 
     }
@@ -26,6 +26,6 @@ class PayResponseJob implements ShouldQueue
      */
     public function handle(): void
     {
-        (new PaymentController)->oneCResponsePay($this->invoice);
+        (new PaymentController)->oneCResponsePay($this->invoice, $this->stage);
     }
 }
