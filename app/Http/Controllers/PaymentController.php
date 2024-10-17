@@ -75,6 +75,9 @@ class PaymentController extends Controller
         foreach ($data as $item) {
             $check_unical = UnicalService::checkByUnical($item['id']);
             if ($check_unical){
+                if ($check_unical->pay_status=='paid'){
+                    PayResponseJob::dispatch($check_unical->invoice, 'paid');
+                }
                 $payment = PaymentService::getPaymentInvoice($item['invoice']);
                 if ($payment){
                     PaySearchJob::dispatch($item['invoice'], 'search');
@@ -117,7 +120,6 @@ class PaymentController extends Controller
             ]);
             PayResponseJob::dispatch($invoice, 'failed');
         }
-
     }
 
     public function paySearch($invoice, $stage)
