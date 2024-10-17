@@ -135,12 +135,17 @@ class PaymentController extends Controller
                 'pay_status' => 'waiting'
             ]);
             PayConfirmJob::dispatch($invoice);
-        }else{
+        }
+        if ($response['code']=='101'){
             $unical = UnicalService::getByUnicalInvoice($invoice);
-            $unical?->update([
-                'pay_status' => 'failed'
+            $payment = PaymentService::getPaymentInvoice($invoice);
+            $payment->update([
+                'is_payed' => "1",
             ]);
-            PayResponseJob::dispatch($invoice, 'failed');
+            $unical?->update([
+                'pay_status' => 'paid'
+            ]);
+            PayResponseJob::dispatch($invoice, 'paid');
         }
     }
 
