@@ -191,6 +191,7 @@ class PaymentController extends Controller
         $pinfl = $client->pinfl;
         $contract = $unical->contract;
         $id = $unical->identifier;
+        dd($pinfl);
         $request = new PayResponseRequest(
             $invoice,
             $status,
@@ -201,6 +202,7 @@ class PaymentController extends Controller
         );
         $res = (new PayResponse())->send($request);
         $response = json_decode($res->body(), true);
+
 
 
     }
