@@ -36,6 +36,7 @@ class ClientService
     public static function getClientByContractId($contract_id)
     {
         $client_contract = ClientContractService::getBytId($contract_id);
+        dd($client_contract);
         return Clients::query()->find($client_contract->client_id);
 
 

@@ -78,10 +78,10 @@ class PaymentController extends Controller
                 if ($check_unical->pay_status=='paid'){
                     PayResponseJob::dispatch($check_unical->invoice, 'paid');
                 }
-                $payment = PaymentService::getPaymentInvoice($item['invoice']);
-                if ($payment){
-                    PaySearchJob::dispatch($item['invoice'], 'search');
-                }
+//                $payment = PaymentService::getPaymentInvoice($item['invoice']);
+//                if ($payment){
+//                    PaySearchJob::dispatch($item['invoice'], 'search');
+//                }
             }
         }
     }
@@ -187,7 +187,6 @@ class PaymentController extends Controller
         $unical = UnicalService::getByUnicalInvoice($invoice);
         $payment = PaymentService::getPaymentInvoice($invoice);
         $client = ClientService::getClientByContractId($payment->contract_id);
-
         $issued = now()->format('d.m.Y');
         $pinfl = $client->pinfl;
         $contract = $unical->contract;
