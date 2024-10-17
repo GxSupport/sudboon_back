@@ -75,13 +75,11 @@ class PaymentController extends Controller
         foreach ($data as $item) {
             $check_unical = UnicalService::checkByUnical($item['id']);
             if ($check_unical){
-                if ($check_unical->pay_status=='paid'){
-                    PayResponseJob::dispatch($check_unical->invoice, 'paid');
-                }
-//                $payment = PaymentService::getPaymentInvoice($item['invoice']);
-//                if ($payment){
+                $payment = PaymentService::getPaymentInvoice($item['invoice']);
+                if ($payment){
+                PayResponseJob::dispatch($item['invoice'], 'paid');
 //                    PaySearchJob::dispatch($item['invoice'], 'search');
-//                }
+                }
             }
         }
     }
@@ -191,7 +189,7 @@ class PaymentController extends Controller
         $pinfl = $client->pinfl;
         $contract = $unical->contract;
         $id = $unical->identifier;
-        dd($pinfl);
+        dd($issued, $pinfl, $contract, $id,$status,$invoice);
         $request = new PayResponseRequest(
             $invoice,
             $status,
