@@ -37,8 +37,9 @@ class ClientService
     {
         $client_contract = ClientContractService::getBytId($contract_id);
         $client_id = $client_contract->client_id;
-        dd($client_id);
-        return Clients::query()->find($client_contract->client_id);
+        $client = Clients::query()->find($client_id);
+         dd($client);
+        return $client;
 
 
 
