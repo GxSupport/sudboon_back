@@ -18,6 +18,7 @@ use App\Jobs\PayResponseJob;
 use App\Jobs\PaySearchJob;
 use App\Models\LogPayModal;
 use App\Models\PaymentModel;
+use App\Models\PayResponseOneCModel;
 use App\Sevices\Client\ClientService;
 use App\Sevices\PaymentService;
 use App\Sevices\UnicalService;
@@ -203,7 +204,11 @@ class PaymentController extends Controller
         $res = (new PayResponse())->send($request);
         $response = json_decode($res->body(), true);
 
-
+        PayResponseOneCModel::query()->create([
+            'invoice' => $invoice,
+            'response' => $res,
+            'identifier' => $id,
+        ]);
 
     }
     public function getPayment()
