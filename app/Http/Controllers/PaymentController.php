@@ -187,17 +187,17 @@ class PaymentController extends Controller
     public function oneCResponsePay($invoice, $status)
     {
         $unical = UnicalService::getByUnicalInvoice($invoice);
-//        $payment = PaymentService::getPaymentInvoice($invoice);
-//        $client = ClientService::getClientByContractId($payment->contract_id);
+        $payment = PaymentService::getPaymentInvoice($invoice);
+        $client = ClientService::getClientByContractId($payment->contract_id);
         $issued = now()->format('d.m.Y');
-//        $pinfl = $client->pinfl;
+        $pinfl = $client->pinfl;
         $contract = $unical->contract;
         $id = $unical->identifier;
         $request = new PayResponseRequest(
             $invoice,
             $status,
             $issued,
-//            $pinfl,
+            $pinfl,
             $contract,
             $id
         );
