@@ -43,7 +43,7 @@ class PayResponseRequest extends Request implements HasBody
             'invoice' => $this->invoice,
             'status' => $this->status,
             'issued' => $this->issued,
-            'pinfl' => $this->pinfl,
+            'pinfl' => (int)$this->pinfl,
             'contract' => $this->contract,
             'id' => $this->id,
 
