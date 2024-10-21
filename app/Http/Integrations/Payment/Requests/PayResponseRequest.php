@@ -19,7 +19,7 @@ class PayResponseRequest extends Request implements HasBody
         protected int $invoice,
         protected string $status,
         protected string $issued,
-        protected string $pinfl,
+        protected int $pinfl,
         protected string $contract,
         protected string $id,
 
@@ -43,7 +43,7 @@ class PayResponseRequest extends Request implements HasBody
             'invoice' => $this->invoice,
             'status' => $this->status,
             'issued' => $this->issued,
-            'pinfl' => (int)$this->pinfl,
+            'pinfl' => $this->pinfl,
             'contract' => $this->contract,
             'id' => $this->id,
 

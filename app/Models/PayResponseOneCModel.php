@@ -14,5 +14,6 @@ class PayResponseOneCModel extends Model
         'invoice',
         'response',
         'identifier',
+        'request'
     ];
 }

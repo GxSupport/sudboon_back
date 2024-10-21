@@ -201,13 +201,16 @@ class PaymentController extends Controller
             $contract,
             $id
         );
+
         $res = (new PayResponse())->send($request);
-        $response = json_decode($res->body(), true);
+
+
 
         PayResponseOneCModel::query()->create([
             'invoice' => $invoice,
             'response' => $res,
             'identifier' => $id,
+            'request' => json_encode($request->defaultBody())
         ]);
 
     }
