@@ -16,6 +16,7 @@ use App\Jobs\PayJob;
 use App\Jobs\PaymentResponseJob;
 use App\Jobs\PayResponseJob;
 use App\Jobs\PaySearchJob;
+use App\Models\LogMunisModel;
 use App\Models\LogPayModal;
 use App\Models\PaymentModel;
 use App\Models\PayResponseOneCModel;
@@ -76,14 +77,14 @@ class PaymentController extends Controller
         foreach ($data as $item) {
             $check_unical = UnicalService::checkByUnical($item['id']);
             if ($check_unical){
-                if ($check_unical->pay_status=='paid'){
-                    PayResponseJob::dispatch($item['invoice'], 'paid');
-                }else {
+//                if ($check_unical->pay_status=='paid'){
+//                    PaySearchJob::dispatch($item['invoice'], 'search');
+//                }else {
                     $payment = PaymentService::getPaymentInvoice($item['invoice']);
                     if ($payment) {
                         PaySearchJob::dispatch($item['invoice'], 'search');
                     }
-                }
+//                }
             }
         }
     }
@@ -93,6 +94,12 @@ class PaymentController extends Controller
         $request = new PayRequest($invoice, 'confirm');
         $res = (new Pay())->send($request);
         $response = json_decode($res->body(), true);
+        LogMunisModel::query()->create([
+            'invoice' => $invoice,
+            'stage' => 'confirm',
+            'status'=> $response['code'],
+            'response' => $res->body(),
+        ]);
         if(isset($response['content']['munis']['state'])){
             if ($response['content']['munis']['state']=='success'){
                 $payment = PaymentService::getPaymentInvoice($invoice);
@@ -129,6 +136,12 @@ class PaymentController extends Controller
         $request = new PayRequest($invoice, $stage);
         $res = (new Pay())->send($request);
         $response = json_decode($res->body(), true);
+        LogMunisModel::query()->create([
+            'invoice' => $invoice,
+            'stage' => $stage,
+            'status'=> $response['code'],
+            'response' => $res->body(),
+        ]);
         if ($response['code']==0){
             $unical = UnicalService::getByUnicalInvoice($invoice);
             $unical?->update([
@@ -147,6 +160,7 @@ class PaymentController extends Controller
             ]);
             PayResponseJob::dispatch($invoice, 'paid');
         }
+
     }
 
     public function onecResponsePayment($invoice)
@@ -201,11 +215,7 @@ class PaymentController extends Controller
             $contract,
             $id
         );
-
         $res = (new PayResponse())->send($request);
-
-
-
         PayResponseOneCModel::query()->create([
             'invoice' => $invoice,
             'response' => $res,
@@ -217,6 +227,5 @@ class PaymentController extends Controller
     public function getPayment()
     {
         return now()->format('d.m.Y');
-
     }
 }
