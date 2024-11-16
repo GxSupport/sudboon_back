@@ -160,7 +160,7 @@ class PaymentController extends Controller
             ]);
             PayResponseJob::dispatch($invoice, 'paid');
         }
-        if($response['code']!='132' || $response['code']!=0){
+        if($response['code']!='132' && $response['code']!='0'){
             $unical = UnicalService::getByUnicalInvoice($invoice);
             $unical?->update([
                 'pay_status' => 'failed'
