@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Integrations\OneC\OneC;
+use App\Http\Integrations\OneC\Requests\SendPdfTo1CRequest;
 use App\Http\Integrations\Payment\Pay;
 use App\Http\Integrations\Payment\Payment;
 use App\Http\Integrations\Payment\PaymentResponse;
@@ -11,6 +13,9 @@ use App\Http\Integrations\Payment\Requests\GetPaymentRequest;
 use App\Http\Integrations\Payment\Requests\PaymentResponseRequest;
 use App\Http\Integrations\Payment\Requests\PayRequest;
 use App\Http\Integrations\Payment\Requests\PayResponseRequest;
+use App\Http\Integrations\Sud\Requests\DownloadPdf;
+use App\Http\Integrations\Sud\Sud;
+use App\Jobs\DownloadAndSendPdfTo1CJob;
 use App\Jobs\PayConfirmJob;
 use App\Jobs\PayJob;
 use App\Jobs\PaymentResponseJob;
@@ -230,9 +235,42 @@ class PaymentController extends Controller
             'request' => json_encode($request->defaultBody())
         ]);
 
+        DownloadAndSendPdfTo1CJob::dispatch([
+            'invoice' => $invoice,
+            'contract' => $contract
+        ]);
+
     }
     public function getPayment()
     {
         return now()->format('d.m.Y');
+    }
+
+    public function downloadPdfByInvoiceId(array $data)
+    {
+        $request = new DownloadPdf($data['invoice']);
+        $connector = new Sud();
+        $response = $connector->send($request);
+        if ($response->successful()) {
+            $pdfContent = $response->body();
+            $base64Pdf = base64_encode($pdfContent);
+            $this->sendPdfTo1C([
+                'invoice' => $data['invoice'],
+                'contract' => $data['contract'],
+                'data' =>  $base64Pdf
+            ]);
+        }
+
+    }
+
+    public function sendPdfTo1C(array $data)
+    {
+        $request = new SendPdfTo1CRequest($data);
+        $connector = new OneC();
+        $response = $connector->send($request);
+        if ($response->successful()) {
+            $unical = UnicalService::getByUnicalInvoice($data['invoice']);
+            $unical->update(['send_pdf' => true]);
+        }
     }
 }

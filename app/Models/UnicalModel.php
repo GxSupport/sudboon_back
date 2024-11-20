@@ -17,5 +17,6 @@ class UnicalModel extends Model
         'invoice',
         'payment_status',
         'pay_status',
+        'send_pdf'
     ];
 }
