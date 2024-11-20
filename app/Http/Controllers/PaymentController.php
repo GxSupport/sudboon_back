@@ -25,6 +25,9 @@ use App\Models\LogMunisModel;
 use App\Models\LogPayModal;
 use App\Models\PaymentModel;
 use App\Models\PayResponseOneCModel;
+use App\Services\LogMunisService;
+use App\Services\LogPayService;
+use App\Services\PayResponseOneCService;
 use App\Sevices\Client\ClientService;
 use App\Sevices\PaymentService;
 use App\Sevices\UnicalService;
@@ -272,5 +275,18 @@ class PaymentController extends Controller
             $unical = UnicalService::getByUnicalInvoice($data['invoice']);
             $unical->update(['send_pdf' => true]);
         }
+    }
+
+    public function invoiceInfos(int $invoice)
+    {
+        $data['unical'] = UnicalService::getByUnicalInvoice($invoice);
+        if(is_null($data['unical'])){
+            throwError('Invoice unical not found !');
+        }
+        $data['unical'] = UnicalService::getByUnicalInvoice($invoice)->toArray();
+        $data['log_munis'] = LogMunisService::getByInvoice($invoice)->toArray();
+        $data['log_pay'] = LogPayService::getByInvoice($invoice)->toArray();
+        $data['pay_responce_onec'] = PayResponseOneCService::getByInvoice($invoice)->toArray();
+        return view('Invoice.invoice_page', compact('data'));
     }
 }

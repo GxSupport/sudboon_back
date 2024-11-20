@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,3 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('invoice/number', function () {
+    return view('Invoice.invoice_number');
+});
+Route::get('invoice/{invoice}', [PaymentController::class, 'invoiceInfos'])->name('invoiceInfos');
+
