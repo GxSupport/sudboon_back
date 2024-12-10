@@ -21,7 +21,7 @@ class SendPdfTo1CRequest extends Request
      */
     public function resolveEndpoint(): string
     {
-        return '/hoop/addimg';
+        return '/addimg';
     }
     public function defaultBody(): array
     {
