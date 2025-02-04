@@ -11,6 +11,8 @@ use App\Http\Requests\PayedRequest;
 use App\Jobs\ContractJob;
 use App\Jobs\PaymentJob;
 use App\Jobs\PaymentResponseJob;
+use App\Models\ClientContracts;
+use App\Models\PaymentModel;
 use App\Sevices\CheckService;
 use App\Sevices\Client\ClientContractService;
 use App\Sevices\Client\ClientService;
@@ -68,7 +70,9 @@ class ContractController extends Controller
                 if ($check_unical->invoice){
                     PaymentResponseJob::dispatch($check_unical->invoice);
                 }else{
-                    PaymentJob::dispatch($item, $check_unical->payment_id);
+                    $contract_id = ClientContracts::query()->where('contract_id', $check_unical->identifier)->first()->id;
+                    $payment_id = PaymentModel::query()->where('contract_id', $contract_id)->first()->id;
+                    PaymentJob::dispatch($item, $payment_id);
                 }
             }
 
