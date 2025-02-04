@@ -20,7 +20,9 @@ class UnicalService
     }
     public static function getByUnicalContract($contract)
     {
-        return UnicalModel::query()->where('contract',$contract)->first();
+        return UnicalModel::query()->where('contract',$contract)
+            ->orderBy('created_at','DESC')
+            ->first();
     }
     public static function getByUnicalInvoice($invoice)
     {
